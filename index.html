@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCycle CI — Plateforme d'Économie Circulaire pour PME</title>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- ChartJS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Custom Premium Design System for EcoCycle CI */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
+
+        :root {
+            --primary: #0D9F6E;
+            --primary-dark: #047857;
+            --primary-light: #D1FAE5;
+            --secondary: #2563EB;
+            --secondary-light: #DBEAFE;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-dark: #0F172A;
+            --surface: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --bg-light: #F8FAFC;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        #app {
+            display: flex;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* Sidebar desktop navigation */
+        .sidebar {
+            width: 280px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-text {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), #000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .nav-item a:hover {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active a {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-secondary);
+            border: 2px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content Area */
+        .main-layout {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .kpi-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .kpi-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .kpi-value {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 14px 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-light);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .badge-warning {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+
+        .badge-danger {
+            background-color: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #10B981);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-size: 15px;
+            font-family: var(--font-body);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--surface);
+            border-top: 1px solid var(--border);
+            height: 64px;
+            z-index: 100;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--primary);
+        }
+
+        .auth-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .auth-hero {
+            flex: 1.2;
+            background: linear-gradient(135deg, #093A3E 0%, #0D9F6E 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            filter: blur(40px);
+        }
+
+        .auth-hero-title {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.15;
+        }
+
+        .auth-hero-desc {
+            font-size: 18px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 500px;
+        }
+
+        .auth-form-side {
+            flex: 0.9;
+            background-color: var(--surface);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            max-width: 560px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .main-layout {
+                margin-left: 0;
+                padding: 24px;
+                padding-bottom: 88px;
+            }
+            .mobile-nav {
+                display: flex;
+            }
+            .auth-hero {
+                display: none;
+            }
+            .auth-form-side {
+                flex: 1;
+                max-width: 100%;
+                padding: 40px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app"></div>
+
+    <script>
+        // --- BASE DE DONNÉES SIMULÉE ---
+        const COTE_DIVOIRE_ZONES = [
+            "Zone Industrielle de Yopougon",
+            "Zone Industrielle de Vridi",
+            "Zone Industrielle de Koumassi",
+            "Zone Industrielle de PK24 (Akoupé-Zeudji)",
+            "Zone Industrielle de Bonoua"
+        ];
+
+        const BUSINESS_SECTORS = [
+            "Agro-industrie (Processing)",
+            "Plastiques & Emballages",
+            "Chimie & Cosmétiques",
+            "Textile & Habillement",
+            "BTP & Matériaux de Construction",
+            "Logistique & Transport",
+            "Automobile & Garages"
+        ];
+
+        const WASTE_TYPES = {
+            cardboard: { id: "cardboard", name: "Carton", emoji: "📦", recyclable: true, unit: "kg", pricePerKg: 80, co2SavedPerKg: 1.2 },
+            plastic: { id: "plastic", name: "Plastique", emoji: "🥤", recyclable: true, unit: "kg", pricePerKg: 150, co2SavedPerKg: 2.1 },
+            metal: { id: "metal", name: "Métal", emoji: "⚙️", recyclable: true, unit: "kg", pricePerKg: 350, co2SavedPerKg: 3.5 },
+            oil: { id: "oil", name: "Huile Usagée", emoji: "🛢️", recyclable: true, unit: "L", pricePerKg: 200, co2SavedPerKg: 1.8 },
+            hazardous: { id: "hazardous", name: "Déchets Dangereux", emoji: "☣️", recyclable: false, unit: "kg", pricePerKg: 250, co2SavedPerKg: 0.2 },
+            mixed: { id: "mixed", name: "Déchets Mixtes", emoji: "🗑️", recyclable: false, unit: "kg", pricePerKg: 50, co2SavedPerKg: 0.0 }
+        };
+
+        const state = {
+            currentUser: null,
+            declarations: [
+                { id: "dec-101", date: "2026-06-05", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "plastic", weight: 1200, recyclable: true, status: "Terminé", value: 180000, co2Avoided: 2520, collector: "Société Ivoirienne de Recyclage" },
+                { id: "dec-102", date: "2026-06-08", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "mixed", weight: 850, recyclable: false, status: "Terminé", value: -42500, co2Avoided: 0, collector: "Ecopro Abidjan" },
+                { id: "dec-103", date: "2026-06-10", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "metal", weight: 600, recyclable: true, status: "En attente de collecteur", value: 210000, co2Avoided: 2100, collector: null }
+            ],
+            matchingAlerts: [
+                { id: "alert-201", smeName: "Abidjan Metal Works", zone: "Zone Industrielle de Vridi", wasteType: "metal", weight: 1800, distance: 4.2, value: 630000 },
+                { id: "alert-202", smeName: "CIE Plastics", zone: "Zone Industrielle de Koumassi", wasteType: "plastic", weight: 750, distance: 8.5, value: 112500 },
+                { id: "alert-203", smeName: "Cosmétiques d'Afrique", zone: "Zone Industrielle de Yopougon", wasteType: "hazardous", weight: 400, distance: 12.1, value: 100000 }
+            ],
+            recyclerConfig: {
+                companyName: "Société Ivoirienne de Recyclage",
+                businessType: "both",
+                zones: ["Zone Industrielle de Yopougon", "Zone Industrielle de Vridi"],
+                prices: { plastic: 150, cardboard: 80, metal: 350, oil: 200, mixed: 50, hazardous: 250 }
+            },
+            tempDeclaration: null
+        };
+
+        function saveState() {
+            localStorage.setItem("ecocycle_state", JSON.stringify(state));
+        }
+
+        function loadState() {
+            const data = localStorage.getItem("ecocycle_state");
+            if (data) {
+                const parsed = JSON.parse(data);
+                Object.assign(state, parsed);
+            }
+        }
+
+        // --- DESSIN DES GRAPHIQUES ---
+        function createCategoryBreakdownChart(canvasId, wasteData) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return null;
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Plastique', 'Carton', 'Métal', 'Huile Usagée', 'Mixtes & Dangereux'],
+                    datasets: [{
+                        data: wasteData,
+                        backgroundColor: ['#0D9F6E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter', size: 12 } } } },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function createWasteTrendChart(canvasId, labelData, valueData) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return null;
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelData,
+                    datasets: [{
+                        label: 'Volume de déchets (kg)',
+                        data: valueData,
+                        backgroundColor: 'rgba(13, 159, 110, 0.85)',
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { font: { family: 'Inter' } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        function createRevenueTrendChart(canvasId, labelData, revenueData) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return null;
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) existingChart.destroy();
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelData,
+                    datasets: [{
+                        label: 'Revenus (FCFA)',
+                        data: revenueData,
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2563EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#F1F5F9' }, ticks: { font: { family: 'Inter' } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        // --- ÉCRANS DE L'APPLICATION ---
+        
+        // 1. ÉCRAN DE CONNEXION
+        const LoginScreen = {
+            render: () => `
+            <div class="auth-container animate-fade-in">
+                <div class="auth-hero">
+                    <div class="logo-container" style="margin-bottom: 24px;">
+                        <div class="logo-icon" style="background: white; color: var(--primary);">♻️</div>
+                        <div class="logo-text" style="background: white; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; color: white;">EcoCycle CI</div>
+                    </div>
+                    <h1 class="auth-hero-title">Plateforme de valorisation des déchets industriels</h1>
+                    <p class="auth-hero-desc">Connecter les PME de Côte d'Ivoire avec les recycleurs et collecteurs agréés pour bâtir une économie circulaire durable.</p>
+                </div>
+                <div class="auth-form-side">
+                    <div style="margin-bottom: 32px;">
+                        <h2 style="font-family: var(--font-heading); font-size: 32px; font-weight: 700; margin-bottom: 8px;">Bienvenue</h2>
+                        <p style="color: var(--text-secondary);">Sélectionnez votre rôle pour vous connecter</p>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-bottom: 24px; background-color: var(--bg-light); padding: 6px; border-radius: 10px;">
+                        <button id="btn-tab-sme" class="btn btn-secondary" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-size: 14px;">Producteur PME</button>
+                        <button id="btn-tab-recycler" class="btn btn-secondary" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-size: 14px;">Recycleur / Collecteur</button>
+                    </div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label class="form-label" for="email">Adresse Email Professionnelle</label>
+                            <input type="email" id="email" class="form-control" placeholder="contact@entreprise.ci" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 32px;">
+                            <label class="form-label" for="password">Mot de passe</label>
+                            <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
+                            Se connecter à l'espace <i data-lucide="arrow-right"></i>
+                        </button>
+                    </form>
+                    <div style="margin-top: 32px; text-align: center; font-size: 14px; color: var(--text-secondary);">
+                        Vous n'avez pas de compte ? <a id="link-register" href="#/register/sme" style="color: var(--primary); font-weight: 600; text-decoration: none;">Créez-en un ici</a>
+                    </div>
+                </div>
+            </div>
+            `,
+            afterRender: () => {
+                let selectedRole = "sme";
+                const btnSme = document.getElementById("btn-tab-sme");
+                const btnRecycler = document.getElementById("btn-tab-recycler");
+                const linkRegister = document.getElementById("link-register");
+                const emailInput = document.getElementById("email");
+
+                const updateTabUI = () => {
+                    if (selectedRole === "sme") {
+                        btnSme.style.backgroundColor = "white";
+                        btnSme.style.boxShadow = "var(--shadow-sm)";
+                        btnSme.style.color = "var(--primary-dark)";
+                        btnSme.style.fontWeight = "600";
+                        btnRecycler.style.backgroundColor = "transparent";
+                        btnRecycler.style.boxShadow = "none";
+                        btnRecycler.style.color = "var(--text-secondary)";
+                        btnRecycler.style.fontWeight = "500";
+                        linkRegister.href = "#/register/sme";
+                        emailInput.value = "producteur@sipra.ci";
+                    } else {
+                        btnRecycler.style.backgroundColor = "white";
+                        btnRecycler.style.boxShadow = "var(--shadow-sm)";
+                        btnRecycler.style.color = "var(--secondary)";
+                        btnRecycler.style.fontWeight = "600";
+                        btnSme.style.backgroundColor = "transparent";
+                        btnSme.style.boxShadow = "none";
+                        btnSme.style.color = "var(--text-secondary)";
+                        btnSme.style.fontWeight = "500";
+                        linkRegister.href = "#/register/recycler";
+                        emailInput.value = "contact@recyclage.ci";
+                    }
+                };
+
+                btnSme.addEventListener("click", () => { selectedRole = "sme"; updateTabUI(); });
+                btnRecycler.addEventListener("click", () => { selectedRole = "recycler"; updateTabUI(); });
+                updateTabUI();
+
+                document.getElementById("login-form").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    state.currentUser = {
+                        email: emailInput.value,
+                        role: selectedRole,
+                        companyName: selectedRole === "sme" ? "SIPRA Industries" : "Société Ivoirienne de Recyclage"
+                    };
+                    saveState();
+                    window.location.hash = selectedRole === "sme" ? "/sme/dashboard" : "/recycler/dashboard";
+                });
+            }
+        };
+
+        // 2. INSCRIPTION PME
+        const RegisterSmeScreen = {
+            render: () => {
+                const zoneOptions = COTE_DIVOIRE_ZONES.map(z => `<option value="${z}">${z}</option>`).join("");
+                const sectorOptions = BUSINESS_SECTORS.map(s => `<option value="${s}">${s}</option>`).join("");
+                return `
+                <div class="auth-container animate-fade-in">
+                    <div class="auth-hero" style="background: linear-gradient(135deg, #0f3d30 0%, #1e3a8a 100%);">
+                        <div class="logo-container" style="margin-bottom: 24px;">
+                            <div class="logo-icon" style="background: white; color: var(--primary);">♻️</div>
+                            <div class="logo-text" style="background: white; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; color: white;">EcoCycle CI</div>
+                        </div>
+                        <h1 class="auth-hero-title">Rejoignez le réseau circulaire de Côte d'Ivoire</h1>
+                        <p class="auth-hero-desc">Enregistrez votre entreprise pour monétiser vos recyclables, suivre vos flux de déchets et générer des rapports RSE exportables.</p>
+                    </div>
+                    <div class="auth-form-side" style="padding-top: 40px; padding-bottom: 40px; justify-content: flex-start; overflow-y: auto;">
+                        <div style="margin-bottom: 24px;">
+                            <a href="#/login" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;">
+                                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Retour à la connexion
+                            </a>
+                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 700; margin-bottom: 6px;">Inscription PME</h2>
+                            <p style="color: var(--text-secondary);">Configurez votre profil d'entreprise productrice</p>
+                        </div>
+                        <form id="register-sme-form">
+                            <div class="form-group">
+                                <label class="form-label" for="company-name">Nom de l'Entreprise (Raison Sociale)</label>
+                                <input type="text" id="company-name" class="form-control" placeholder="Ex: SIPRA Industries" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="industrial-zone">Zone Industrielle</label>
+                                <select id="industrial-zone" class="form-control" required>
+                                    <option value="" disabled selected>Sélectionnez une zone industrielle</option>
+                                    ${zoneOptions}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="business-sector">Secteur d'activité</label>
+                                <select id="business-sector" class="form-control" required>
+                                    <option value="" disabled selected>Sélectionnez votre secteur</option>
+                                    ${sectorOptions}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Numéro de Téléphone (Côte d'Ivoire)</label>
+                                <input type="tel" id="phone" class="form-control" placeholder="Ex: +225 07 00 00 00 00" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email du gestionnaire</label>
+                                <input type="email" id="email" class="form-control" placeholder="gestionnaire@entreprise.ci" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 28px;">
+                                <label class="form-label" for="password">Mot de passe</label>
+                                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
+                                Créer mon compte PME <i data-lucide="user-plus"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                `;
+            },
+            afterRender: () => {
+                document.getElementById("register-sme-form").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const companyName = document.getElementById("company-name").value;
+                    state.currentUser = {
+                        role: "sme",
+                        companyName: companyName,
+                        email: document.getElementById("email").value
+                    };
+                    saveState();
+                    window.location.hash = "/sme/dashboard";
+                });
+            }
+        };
+
+        // 3. INSCRIPTION / CONFIGURATION RECYCLEUR
+        const RegisterRecyclerScreen = {
+            render: () => {
+                const zoneCheckboxes = COTE_DIVOIRE_ZONES.map((z, idx) => `
+                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; cursor: pointer;">
+                        <input type="checkbox" name="service-zone" value="${z}" ${idx < 2 ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--primary);">
+                        ${z}
+                    </label>
+                `).join("");
+                return `
+                <div class="auth-container animate-fade-in" style="flex-direction: row-reverse;">
+                    <div class="auth-hero" style="background: linear-gradient(135deg, #1e3a8a 0%, #0D9F6E 100%);">
+                        <div class="logo-container" style="margin-bottom: 24px;">
+                            <div class="logo-icon" style="background: white; color: var(--secondary);">♻️</div>
+                            <div class="logo-text" style="background: white; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; color: white;">EcoCycle CI</div>
+                        </div>
+                        <h1 class="auth-hero-title">Développez votre activité de collecte</h1>
+                        <p class="auth-hero-desc">Accédez directement aux offres de déchets industriels d'Abidjan, proposez vos tarifs et validez les transactions.</p>
+                    </div>
+                    <div class="auth-form-side" style="padding-top: 40px; padding-bottom: 40px; justify-content: flex-start; overflow-y: auto;">
+                        <div style="margin-bottom: 24px;">
+                            <a href="#/login" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;">
+                                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Retour à la connexion
+                            </a>
+                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 700; margin-bottom: 6px;">Profil Recyclage / Collecte</h2>
+                            <p style="color: var(--text-secondary);">Configurez vos zones et vos tarifs d'achat</p>
+                        </div>
+                        <form id="register-recycler-form">
+                            <div class="form-group">
+                                <label class="form-label" for="recycler-company-name">Nom de l'Entreprise (Raison Sociale)</label>
+                                <input type="text" id="recycler-company-name" class="form-control" value="Société Ivoirienne de Recyclage" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Zones industrielles desservies</label>
+                                <div style="background-color: var(--bg-light); border: 1px solid var(--border); padding: 12px; border-radius: 10px; max-height: 140px; overflow-y: auto;">
+                                    ${zoneCheckboxes}
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 28px;">
+                                <label class="form-label">Grille tarifaire par défaut (FCFA par kg/L)</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background-color: var(--bg-light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                    <div>
+                                        <label style="font-size: 12px; color: var(--text-secondary);">Plastique (FCFA/kg)</label>
+                                        <input type="number" id="rate-plastic" class="form-control" value="150" style="padding: 6px 10px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 12px; color: var(--text-secondary);">Carton (FCFA/kg)</label>
+                                        <input type="number" id="rate-cardboard" class="form-control" value="80" style="padding: 6px 10px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 12px; color: var(--text-secondary);">Métal (FCFA/kg)</label>
+                                        <input type="number" id="rate-metal" class="form-control" value="350" style="padding: 6px 10px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 12px; color: var(--text-secondary);">Huile usagée (FCFA/L)</label>
+                                        <input type="number" id="rate-oil" class="form-control" value="200" style="padding: 6px 10px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
+                                Enregistrer la configuration <i data-lucide="check-circle"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                `;
+            },
+            afterRender: () => {
+                document.getElementById("register-recycler-form").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const companyName = document.getElementById("recycler-company-name").value;
+                    state.currentUser = {
+                        role: "recycler",
+                        companyName: companyName,
+                        email: "operator@company.ci"
+                    };
+                    saveState();
+                    window.location.hash = "/recycler/dashboard";
+                });
+            }
+        };
+
+        // 4. DÉCLARATION DE DÉCHETS
+        const WasteDeclarationScreen = {
+            render: () => {
+                const wasteCards = Object.values(WASTE_TYPES).map(w => `
+                    <div class="card waste-type-card" data-id="${w.id}" style="cursor: pointer; text-align: center; border: 2px solid var(--border); border-radius: 16px; padding: 20px; transition: var(--transition);">
+                        <div style="font-size: 36px; margin-bottom: 8px;">${w.emoji}</div>
+                        <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">${w.name}</div>
+                        <div class="badge ${w.recyclable ? 'badge-success' : 'badge-warning'}" style="font-size: 10px;">
+                            ${w.recyclable ? 'Valorisable (Revenu)' : 'Non-recyclable'}
+                        </div>
+                    </div>
+                `).join("");
+                return `
+                <div class="topbar animate-fade-in">
+                    <h1 class="page-title">Déclarer un flux de déchets</h1>
+                </div>
+                <div class="card animate-fade-in" style="max-width: 800px; margin: 0 auto; padding: 32px;">
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 8px;">1. Sélectionnez le type de déchet</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px;">Choisissez la catégorie principale du déchet industriel à collecter.</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;" id="waste-cards-grid">
+                        ${wasteCards}
+                    </div>
+                    <form id="declaration-form" style="display: none;">
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 8px;">2. Saisir la quantité</h3>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label class="form-label">Masse totale estimée</label>
+                                <span id="weight-display" style="font-size: 18px; font-weight: 700; color: var(--primary-dark);">500 kg</span>
+                            </div>
+                            <input type="range" id="weight-slider" min="50" max="10000" step="50" value="500" style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; outline: none; accent-color: var(--primary);">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
+                            Calculer la qualification <i data-lucide="arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+                `;
+            },
+            afterRender: () => {
+                let selectedWasteType = null;
+                const form = document.getElementById("declaration-form");
+                const cardsGrid = document.getElementById("waste-cards-grid");
+                const weightSlider = document.getElementById("weight-slider");
+                const weightDisplay = document.getElementById("weight-display");
+
+                cardsGrid.addEventListener("click", (e) => {
+                    const card = e.target.closest(".waste-type-card");
+                    if (!card) return;
+                    document.querySelectorAll(".waste-type-card").forEach(c => {
+                        c.style.borderColor = "var(--border)";
+                        c.style.backgroundColor = "white";
+                    });
+                    selectedWasteType = card.dataset.id;
+                    card.style.borderColor = "var(--primary)";
+                    card.style.backgroundColor = "var(--primary-light)";
+                    form.style.display = "block";
+                    weightDisplay.innerText = `${weightSlider.value} ${WASTE_TYPES[selectedWasteType].unit}`;
+                });
+
+                weightSlider.addEventListener("input", (e) => {
+                    weightDisplay.innerText = `${e.target.value} ${WASTE_TYPES[selectedWasteType].unit}`;
+                });
+
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const weight = parseInt(weightSlider.value);
+                    const wInfo = WASTE_TYPES[selectedWasteType];
+                    const value = wInfo.recyclable ? (weight * wInfo.pricePerKg) : -(weight * wInfo.pricePerKg);
+
+                    state.tempDeclaration = {
+                        wasteType: selectedWasteType,
+                        weight: weight,
+                        value: value,
+                        co2Avoided: Math.round(weight * wInfo.co2SavedPerKg)
+                    };
+                    saveState();
+                    window.location.hash = "/sme/result";
+                });
+            }
+        };
+
+        // 5. RÉSULTAT DE LA QUALIFICATION
+        const WasteResultScreen = {
+            render: () => {
+                const item = state.tempDeclaration;
+                if (!item) {
+                    return `<div style="text-align: center; padding: 48px;"><a href="#/sme/declare" class="btn btn-primary">Faire une déclaration</a></div>`;
+                }
+                const wInfo = WASTE_TYPES[item.wasteType];
+                const isRecyclable = wInfo.recyclable;
+                const formattedValue = Math.abs(item.value).toLocaleString() + " FCFA";
+
+                return `
+                <div class="topbar animate-fade-in">
+                    <h1 class="page-title">Résultat de la qualification</h1>
+                </div>
+                <div class="animate-fade-in" style="max-width: 650px; margin: 0 auto;">
+                    ${isRecyclable ? `
+                        <div class="card" style="border-top: 8px solid var(--primary); padding: 32px; background: linear-gradient(to bottom, #f0fdf4, #ffffff);">
+                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #14532d;">Scenario A: Recyclable</h2>
+                            <div style="background-color: white; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                    <span>Gain estimé pour la PME :</span>
+                                    <span style="font-size: 24px; font-weight: 800; color: var(--primary-dark);">${formattedValue}</span>
+                                </div>
+                            </div>
+                            <button id="btn-route-action" class="btn btn-primary btn-full">Trouver un recycleur partenaire <i data-lucide="search"></i></button>
+                        </div>
+                    ` : `
+                        <div class="card" style="border-top: 8px solid var(--warning); padding: 32px; background: linear-gradient(to bottom, #fffbeb, #ffffff);">
+                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #78350f;">Scenario B: Élimination Requise</h2>
+                            <div style="background-color: white; border: 1px solid #fef3c7; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                    <span>Frais de traitement (PME Paye) :</span>
+                                    <span style="font-size: 24px; font-weight: 800; color: var(--warning);">${formattedValue}</span>
+                                </div>
+                            </div>
+                            <button id="btn-route-action" class="btn btn-primary btn-full" style="background: linear-gradient(135deg, var(--warning), #d97706);">Trouver un collecteur agréé <i data-lucide="truck"></i></button>
+                        </div>
+                    `}
+                </div>
+                `;
+            },
+            afterRender: () => {
+                const item = state.tempDeclaration;
+                if (!item) return;
+                const wInfo = WASTE_TYPES[item.wasteType];
+                
+                document.getElementById("btn-route-action").addEventListener("click", () => {
+                    const now = new Date();
+                    state.declarations.push({
+                        id: "dec-" + (100 + state.declarations.length + 1),
+                        date: now.toISOString().split('T')[0],
+                        company: state.currentUser ? state.currentUser.companyName : "SIPRA Industries",
+                        zone: "Zone Industrielle de Yopougon",
+                        wasteType: item.wasteType,
+                        weight: item.weight,
+                        recyclable: wInfo.recyclable,
+                        status: "En attente de collecteur",
+                        value: item.value,
+                        co2Avoided: item.co2Avoided,
+                        collector: null
+                    });
+                    state.tempDeclaration = null;
+                    saveState();
+                    alert("Demande de collecte enregistrée et publiée sur le réseau de Côte d'Ivoire !");
+                    window.location.hash = "/sme/collections";
+                });
+            }
+        };
+
+        // 6. TABLEAU DE BORD PME
+        const SmeDashboardScreen = {
+            render: () => {
+                let totalWaste = 0, revenue = 0, costs = 0, completed = 0, co2 = 0;
+                state.declarations.forEach(d => {
+                    totalWaste += d.weight;
+                    if (d.value > 0) revenue += d.value;
+                    else costs += Math.abs(d.value);
+                    if (d.status === "Terminé" || d.status === "Completed") completed++;
+                    co2 += d.co2Avoided;
+                });
+
+                const tableRows = state.declarations.map(d => {
+                    const wInfo = WASTE_TYPES[d.wasteType];
+                    const valDisplay = d.value > 0 ? `+${d.value.toLocaleString()} FCFA` : `-${Math.abs(d.value).toLocaleString()} FCFA`;
+                    return `<tr><td>#${d.id}</td><td>${d.date}</td><td>${wInfo.emoji} ${wInfo.name}</td><td>${d.weight} kg</td><td>${valDisplay}</td><td>${d.status}</td></tr>`;
+                }).reverse().slice(0, 3).join("");
+
+                return `
+                <div class="topbar">
+                    <h1 class="page-title">Tableau de bord PME</h1>
+                    <a href="#/sme/declare" class="btn btn-primary">Déclarer un Déchet</a>
+                </div>
+                <div class="kpi-grid">
+                    <div class="card kpi-card"><div>Total Déclaré</div><div class="kpi-value">${(totalWaste/1000).toFixed(1)} Tonnes</div></div>
+                    <div class="card kpi-card"><div>Revenus générés</div><div class="kpi-value" style="color: var(--primary);">${revenue.toLocaleString()} F</div></div>
+                    <div class="card kpi-card"><div>Coûts d'élimination</div><div class="kpi-value" style="color: var(--danger);">${costs.toLocaleString()} F</div></div>
+                    <div class="card kpi-card"><div>Collectes terminées</div><div class="kpi-value">${completed}</div></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+                    <div class="card"><h3>Évolution Mensuelle</h3><div style="height:200px;"><canvas id="sme-trend-chart"></canvas></div></div>
+                    <div class="card"><h3>Répartition par Matière</h3><div style="height:200px;"><canvas id="sme-pie-chart"></canvas></div></div>
+                </div>
+                <div class="card">
+                    <h3>Historique Récent</h3>
+                    <div class="table-container"><table><tbody>${tableRows}</tbody></table></div>
+                </div>
+                `;
+            },
+            afterRender: () => {
+                const breakData = [0, 0, 0, 0, 0];
+                state.declarations.forEach(d => {
+                    if (d.wasteType === 'plastic') breakData[0] += d.weight;
+                    else if (d.wasteType === 'cardboard') breakData[1] += d.weight;
+                    else if (d.wasteType === 'metal') breakData[2] += d.weight;
+                    else if (d.wasteType === 'oil') breakData[3] += d.weight;
+                    else breakData[4] += d.weight;
+                });
+                createWasteTrendChart("sme-trend-chart", ["Fév", "Mar", "Avr", "Mai", "Juin"], [1000, 2000, 1500, 2500, 3000]);
+                createCategoryBreakdownChart("sme-pie-chart", breakData);
+            }
+        };
+
+        // 7. ALERTES D'OPPORTUNITÉS (RECYCLEUR)
+        const MatchingAlertsScreen = {
+            render: () => {
+                const cards = state.matchingAlerts.map(a => `
+                    <div class="card" style="margin-bottom: 16px; border-left: 6px solid var(--primary);">
+                        <h3>${a.smeName}</h3>
+                        <p>📍 Zone: ${a.zone} (${a.distance} km)</p>
+                        <p>Déchet: ${WASTE_TYPES[a.wasteType].name} (${a.weight} kg) - Valeur: ${a.value.toLocaleString()} FCFA</p>
+                        <div style="margin-top: 12px; display: flex; gap: 10px;">
+                            <button class="btn btn-secondary btn-decline" data-id="${a.id}">Décliner</button>
+                            <button class="btn btn-primary btn-accept" data-id="${a.id}">Accepter la collecte</button>
+                        </div>
+                    </div>
+                `).join("");
+                return `
+                <div class="topbar"><h1>Opportunités de collecte</h1></div>
+                <div>${cards || '<p>Aucune opportunité dans vos zones en ce moment.</p>'}</div>
+                `;
+            },
+            afterRender: () => {
+                document.querySelectorAll(".btn-accept").forEach(b => {
+                    b.addEventListener("click", (e) => {
+                        const id = e.target.dataset.id;
+                        const match = state.matchingAlerts.find(a => a.id === id);
+                        if (!match) return;
+
+                        state.declarations.push({
+                            id: "dec-" + (100 + state.declarations.length + 1),
+                            date: new Date().toISOString().split('T')[0],
+                            company: match.smeName,
+                            zone: match.zone,
+                            wasteType: match.wasteType,
+                            weight: match.weight,
+                            recyclable: true,
+                            status: "Matched",
+                            value: match.value,
+                            co2Avoided: 1500,
+                            collector: "Société Ivoirienne de Recyclage"
+                        });
+                        state.matchingAlerts = state.matchingAlerts.filter(a => a.id !== id);
+                        saveState();
+                        alert("Collecte acceptée ! Elle apparaît désormais dans votre agenda.");
+                        window.location.hash = "/recycler/collections";
+                    });
+                });
+            }
+        };
+
+        // 8. SCANNER QR DE VALIDATION (RECYCLEUR)
+        const CollectionValidationScreen = {
+            render: () => {
+                const match = state.declarations.find(d => d.status === "Matched");
+                return `
+                <div class="topbar"><h1>Scanner de validation QR</h1></div>
+                <div style="max-width:400px; margin:0 auto; text-align:center;">
+                    ${match ? `
+                        <div style="background:#000; height:300px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; position:relative;">
+                            <div style="position: absolute; top: 10px; width: 90%; height: 3px; background-color: var(--primary); animation: scanEffect 2s infinite ease-in-out;"></div>
+                            [Viseur Caméra en cours de scan]
+                        </div>
+                        <p style="margin: 20px 0;">Entreprise PME: <b>${match.company}</b> (${match.weight} kg)</p>
+                        <button id="btn-validate" class="btn btn-primary btn-full">Valider la collecte par QR Code</button>
+                    ` : `
+                        <p>Aucune collecte en cours de validation. Acceptez d'abord une alerte de collecte.</p>
+                    `}
+                </div>
+                <style>@keyframes scanEffect { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }</style>
+                `;
+            },
+            afterRender: () => {
+                const btn = document.getElementById("btn-validate");
+                if (btn) {
+                    btn.addEventListener("click", () => {
+                        const match = state.declarations.find(d => d.status === "Matched");
+                        if (match) {
+                            match.status = "Terminé";
+                            saveState();
+                            alert("Collecte validée avec succès ! Le ticket est archivé.");
+                            window.location.hash = "/recycler/dashboard";
+                        }
+                    });
+                }
+            }
+        };
+
+        // 9. ANALYTICS (RECYCLEUR)
+        const AnalyticsDashboardScreen = {
+            render: () => `
+            <div class="topbar"><h1>Statistiques & Analyses</h1></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                <div class="card"><h3>Évolution des Revenus (FCFA)</h3><div style="height:250px;"><canvas id="recycler-rev-chart"></canvas></div></div>
+                <div class="card"><h3>Volumes Traités (kg)</h3><div style="height:250px;"><canvas id="recycler-vol-chart"></canvas></div></div>
+            </div>
+            `,
+            afterRender: () => {
+                createRevenueTrendChart("recycler-rev-chart", ["Fév", "Mar", "Avr", "Mai", "Juin"], [400000, 600000, 550000, 800000, 950000]);
+                createWasteTrendChart("recycler-vol-chart", ["Fév", "Mar", "Avr", "Mai", "Juin"], [8000, 12000, 11000, 15000, 17000]);
+            }
+        };
+
+        // 10. RAPPORT ESG (PME)
+        const EsgReportScreen = {
+            render: () => {
+                let recycled = 0, co2 = 0;
+                state.declarations.forEach(d => {
+                    if (d.status === "Terminé" || d.status === "Completed") {
+                        recycled += d.weight;
+                        co2 += d.co2Avoided;
+                    }
+                });
+                return `
+                <div class="topbar">
+                    <h1>Rapport ESG & Durabilité</h1>
+                    <button class="btn btn-primary" onclick="alert('Téléchargement du PDF lancé !')">Télécharger le PDF</button>
+                </div>
+                <div class="card" style="padding:40px; border: 1px solid var(--border); background: #ffffff;">
+                    <h2>${state.currentUser ? state.currentUser.companyName : 'SIPRA Industries'}</h2>
+                    <p style="color:var(--text-secondary);">Période de reporting: Année 2026 (Abidjan)</p>
+                    <div style="display:flex; gap:20px; margin:30px 0;">
+                        <div class="card" style="flex:1; background: #f0fdf4;"><h4>CO₂ Évité</h4><h3>${(co2/1000).toFixed(2)} Tonnes</h3></div>
+                        <div class="card" style="flex:1; background: #eff6ff;"><h4>Matériaux Recyclés</h4><h3>${recycled} kg</h3></div>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Ce bilan est vérifié par le registre national de gestion des déchets du Ministère de l'Environnement de Côte d'Ivoire.</p>
+                </div>
+                `;
+            },
+            afterRender: () => {}
+        };
+
+        // LISTE DES COLLECTES
+        const CollectionsScreen = {
+            render: () => {
+                const rows = state.declarations.map(d => `
+                    <tr>
+                        <td>#${d.id}</td>
+                        <td>${d.date}</td>
+                        <td>${WASTE_TYPES[d.wasteType].emoji} ${WASTE_TYPES[d.wasteType].name}</td>
+                        <td>${d.weight} kg</td>
+                        <td>${d.status}</td>
+                    </tr>
+                `).join("");
+                return `
+                <div class="topbar"><h1>Registre des collectes</h1></div>
+                <div class="card"><div class="table-container"><table><tbody>${rows}</tbody></table></div></div>
+                `;
+            },
+            afterRender: () => {}
+        };
+
+        // MON PROFIL
+        const ProfileScreen = {
+            render: () => `
+            <div class="topbar"><h1>Mon Profil</h1></div>
+            <div class="card" style="max-width:500px; margin:0 auto; text-align:center;">
+                <h2>${state.currentUser ? state.currentUser.companyName : 'Utilisateur invité'}</h2>
+                <span class="badge badge-success" style="margin-top: 10px;">Rôle: ${state.currentUser ? state.currentUser.role.toUpperCase() : ''}</span>
+                <div style="margin-top:24px; display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn btn-secondary" onclick="window.location.hash='#/register/recycler'">Grille des Tarifs</button>
+                    <button id="btn-logout" class="btn btn-danger">Se déconnecter</button>
+                </div>
+            </div>
+            `,
+            afterRender: () => {
+                document.getElementById("btn-logout").addEventListener("click", () => {
+                    state.currentUser = null;
+                    saveState();
+                    window.location.hash = "/login";
+                });
+            }
+        };
+
+        // --- SYSTEM DE ROUTAGE ---
+        const routes = {
+            "/login": LoginScreen,
+            "/register/sme": RegisterSmeScreen,
+            "/register/recycler": RegisterRecyclerScreen,
+            "/sme/dashboard": SmeDashboardScreen,
+            "/sme/declare": WasteDeclarationScreen,
+            "/sme/result": WasteResultScreen,
+            "/sme/collections": CollectionsScreen,
+            "/sme/esg": EsgReportScreen,
+            "/sme/profile": ProfileScreen,
+            "/recycler/dashboard": AnalyticsDashboardScreen,
+            "/recycler/alerts": MatchingAlertsScreen,
+            "/recycler/collections": CollectionsScreen,
+            "/recycler/scanner": CollectionValidationScreen,
+            "/recycler/profile": ProfileScreen
+        };
+
+        function renderLayout(contentHtml, userRole) {
+            if (!userRole) return contentHtml;
+
+            const isSme = userRole === "sme";
+            const menu = isSme ? `
+                <li class="nav-item" id="nav-sme-dashboard"><a href="#/sme/dashboard"><i data-lucide="layout-dashboard"></i> Tableau de bord</a></li>
+                <li class="nav-item" id="nav-sme-declare"><a href="#/sme/declare"><i data-lucide="plus-circle"></i> Déclarer</a></li>
+                <li class="nav-item" id="nav-sme-collections"><a href="#/sme/collections"><i data-lucide="truck"></i> Mes Collectes</a></li>
+                <li class="nav-item" id="nav-sme-esg"><a href="#/sme/esg"><i data-lucide="file-bar-chart"></i> Rapport ESG</a></li>
+                <li class="nav-item" id="nav-sme-profile"><a href="#/sme/profile"><i data-lucide="user"></i> Mon Profil</a></li>
+            ` : `
+                <li class="nav-item" id="nav-recycler-dashboard"><a href="#/recycler/dashboard"><i data-lucide="line-chart"></i> Statistiques</a></li>
+                <li class="nav-item" id="nav-recycler-alerts"><a href="#/recycler/alerts"><i data-lucide="bell"></i> Alertes Collecte</a></li>
+                <li class="nav-item" id="nav-recycler-collections"><a href="#/recycler/collections"><i data-lucide="truck"></i> Agenda</a></li>
+                <li class="nav-item" id="nav-recycler-scanner"><a href="#/recycler/scanner"><i data-lucide="qr-code"></i> Scanner QR</a></li>
+                <li class="nav-item" id="nav-recycler-profile"><a href="#/recycler/profile"><i data-lucide="user"></i> Profil</a></li>
+            `;
+
+            return `
+                <div class="sidebar">
+                    <div class="logo-container"><div class="logo-icon">♻️</div><div class="logo-text">EcoCycle CI</div></div>
+                    <ul class="nav-menu">${menu}</ul>
+                    <div class="sidebar-footer">
+                        <div class="avatar">${state.currentUser.companyName.charAt(0)}</div>
+                        <div class="user-info">
+                            <div class="user-name">${state.currentUser.companyName}</div>
+                            <div class="user-role">${state.currentUser.role === "sme" ? "PME PRODUCTRICE" : "COLLECTEUR AGRÉÉ"}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="main-layout"><div id="screen-container">${contentHtml}</div></div>
+            `;
+        }
+
+        function updateActiveNavLinks(path) {
+            document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+            const normalized = path.replace("/", "").replace("/", "-");
+            const deskNav = document.getElementById(`nav-${normalized}`);
+            if (deskNav) deskNav.classList.add("active");
+        }
+
+        function router() {
+            loadState();
+            const appEl = document.getElementById("app");
+            const rawHash = window.location.hash;
+            let path = rawHash.slice(1) || "/";
+
+            if (!state.currentUser && path !== "/register/sme" && path !== "/register/recycler") {
+                path = "/login";
+                window.location.hash = "/login";
+            }
+
+            if (state.currentUser && (path === "/" || path === "/login")) {
+                path = state.currentUser.role === "sme" ? "/sme/dashboard" : "/recycler/dashboard";
+                window.location.hash = path;
+            }
+
+            const screen = routes[path];
+            if (screen) {
+                appEl.innerHTML = renderLayout(screen.render(), state.currentUser ? state.currentUser.role : null);
+                updateActiveNavLinks(path);
+                if (window.lucide) window.lucide.createIcons();
+                if (screen.afterRender) screen.afterRender();
+            }
+        }
+
+        window.addEventListener("hashchange", router);
+        window.addEventListener("load", router);
+    </script>
+</body>
+</html>
