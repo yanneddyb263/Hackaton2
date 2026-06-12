@@ -11,6 +11,9 @@
     <!-- ChartJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         /* Custom Premium Design System for EcoCycle CI */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
@@ -62,6 +65,35 @@
             min-height: 100vh;
         }
 
+        /* Config Banner */
+        .config-banner {
+            background-color: #1E293B;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            z-index: 200;
+            border-bottom: 1px solid #334155;
+        }
+
+        .config-fields {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .config-input {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background-color: #0F172A;
+            color: white;
+            font-size: 12px;
+            width: 200px;
+        }
+
         /* Sidebar desktop navigation */
         .sidebar {
             width: 280px;
@@ -71,7 +103,7 @@
             flex-direction: column;
             padding: 24px;
             position: fixed;
-            height: 100vh;
+            height: calc(100vh - 45px);
             z-index: 100;
             transition: var(--transition);
         }
@@ -477,6 +509,27 @@
             animation: fadeIn 0.4s ease-out forwards;
         }
 
+        /* Operator Select Cards */
+        .operator-card {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .operator-card:hover {
+            border-color: var(--primary);
+            background-color: var(--bg-light);
+        }
+        .operator-card.selected {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
         @media (max-width: 1024px) {
             .sidebar {
                 display: none;
@@ -502,9 +555,50 @@
 </head>
 <body>
 
+    <!-- Configuration Supabase Header -->
+    <div class="config-banner" style="display:none;">
+        <div>⚙️ <strong>Configuration de la Base de Données Supabase</strong></div>
+        <div class="config-fields">
+            <input type="text" id="supabase-url" class="config-input" placeholder="URL du projet Supabase">
+            <input type="text" id="supabase-key" class="config-input" placeholder="Clé API Anonyme (anon key)">
+            <button class="btn btn-primary" id="btn-save-config" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">Connecter</button>
+        </div>
+    </div>
+
     <div id="app"></div>
 
     <script>
+        // --- INITIALISATION SUPABASE SI FOURNI ---
+        let supabaseClient = null;
+
+        function checkSupabaseConfig() {
+            const url = localStorage.getItem("supabase_url") || "";
+            const key = localStorage.getItem("supabase_key") || "";
+            
+            document.getElementById("supabase-url").value = url;
+            document.getElementById("supabase-key").value = key;
+
+            if (url && key && window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(url, key);
+                    console.log("Supabase connecté avec succès !");
+                } catch(e) {
+                    console.error("Erreur de connexion Supabase :", e);
+                }
+            }
+        }
+
+        document.getElementById("btn-save-config").addEventListener("click", () => {
+            const url = document.getElementById("supabase-url").value.trim();
+            const key = document.getElementById("supabase-key").value.trim();
+
+            localStorage.setItem("supabase_url", url);
+            localStorage.setItem("supabase_key", key);
+
+            alert("Configuration enregistrée ! Le site va s'actualiser.");
+            window.location.reload();
+        });
+
         // --- BASE DE DONNÉES SIMULÉE ---
         const COTE_DIVOIRE_ZONES = [
             "Zone Industrielle de Yopougon",
@@ -535,18 +629,26 @@
 
         const state = {
             currentUser: null,
+            users: [
+                { email: "producteur@sipra.ci", password: "123", role: "sme", companyName: "SIPRA Industries" },
+                { email: "contact@recyclage.ci", password: "123", role: "recycler", companyName: "Société Ivoirienne de Recyclage (SIR)" }
+            ],
+            recyclers: [
+                { id: "rec-1", name: "Société Ivoirienne de Recyclage (SIR)", score: "4.8★", zone: "Zone Industrielle de Yopougon", phone: "+225 07 45 88 12" },
+                { id: "rec-2", name: "Abidjan Plastiques Group", score: "4.5★", zone: "Zone Industrielle de Vridi", phone: "+225 05 11 22 33" },
+                { id: "rec-3", name: "Ecopro Abidjan", score: "4.9★", zone: "Zone Industrielle de Koumassi", phone: "+225 07 09 88 77" }
+            ],
             declarations: [
-                { id: "dec-101", date: "2026-06-05", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "plastic", weight: 1200, recyclable: true, status: "Terminé", value: 180000, co2Avoided: 2520, collector: "Société Ivoirienne de Recyclage" },
+                { id: "dec-101", date: "2026-06-05", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "plastic", weight: 1200, recyclable: true, status: "Terminé", value: 180000, co2Avoided: 2520, collector: "Société Ivoirienne de Recyclage (SIR)" },
                 { id: "dec-102", date: "2026-06-08", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "mixed", weight: 850, recyclable: false, status: "Terminé", value: -42500, co2Avoided: 0, collector: "Ecopro Abidjan" },
-                { id: "dec-103", date: "2026-06-10", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "metal", weight: 600, recyclable: true, status: "En attente de collecteur", value: 210000, co2Avoided: 2100, collector: null }
+                { id: "dec-103", date: "2026-06-10", company: "SIPRA Industries", zone: "Zone Industrielle de Yopougon", wasteType: "metal", weight: 600, recyclable: true, status: "En attente de collecteur", value: 210000, co2Avoided: 2100, collector: "Société Ivoirienne de Recyclage (SIR)" }
             ],
             matchingAlerts: [
                 { id: "alert-201", smeName: "Abidjan Metal Works", zone: "Zone Industrielle de Vridi", wasteType: "metal", weight: 1800, distance: 4.2, value: 630000 },
-                { id: "alert-202", smeName: "CIE Plastics", zone: "Zone Industrielle de Koumassi", wasteType: "plastic", weight: 750, distance: 8.5, value: 112500 },
-                { id: "alert-203", smeName: "Cosmétiques d'Afrique", zone: "Zone Industrielle de Yopougon", wasteType: "hazardous", weight: 400, distance: 12.1, value: 100000 }
+                { id: "alert-202", smeName: "CIE Plastics", zone: "Zone Industrielle de Koumassi", wasteType: "plastic", weight: 750, distance: 8.5, value: 112500 }
             ],
             recyclerConfig: {
-                companyName: "Société Ivoirienne de Recyclage",
+                companyName: "Société Ivoirienne de Recyclage (SIR)",
                 businessType: "both",
                 zones: ["Zone Industrielle de Yopougon", "Zone Industrielle de Vridi"],
                 prices: { plastic: 150, cardboard: 80, metal: 350, oil: 200, mixed: 50, hazardous: 250 }
@@ -566,7 +668,7 @@
             }
         }
 
-        // --- DESSIN DES GRAPHIQUES ---
+        // --- CHARTS HELPER ---
         function createCategoryBreakdownChart(canvasId, wasteData) {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return null;
@@ -654,9 +756,9 @@
             });
         }
 
-        // --- ÉCRANS DE L'APPLICATION ---
+        // --- ÉCRANS ---
         
-        // 1. ÉCRAN DE CONNEXION
+        // 1. LOGIN
         const LoginScreen = {
             render: () => `
             <div class="auth-container animate-fade-in">
@@ -670,12 +772,15 @@
                 </div>
                 <div class="auth-form-side">
                     <div style="margin-bottom: 32px;">
-                        <h2 style="font-family: var(--font-heading); font-size: 32px; font-weight: 700; margin-bottom: 8px;">Bienvenue</h2>
+                        <h2 style="font-family: var(--font-heading); font-size: 32px; font-weight: 700; margin-bottom: 8px;">Connexion</h2>
                         <p style="color: var(--text-secondary);">Sélectionnez votre rôle pour vous connecter</p>
                     </div>
                     <div style="display: flex; gap: 12px; margin-bottom: 24px; background-color: var(--bg-light); padding: 6px; border-radius: 10px;">
                         <button id="btn-tab-sme" class="btn btn-secondary" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-size: 14px;">Producteur PME</button>
                         <button id="btn-tab-recycler" class="btn btn-secondary" style="flex: 1; border: none; padding: 10px; border-radius: 8px; font-size: 14px;">Recycleur / Collecteur</button>
+                    </div>
+                    <div id="login-error-alert" style="display:none; background-color:#fee2e2; border: 1px solid #fca5a5; color:#b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 500;">
+                        ❌ Adresse e-mail ou mot de passe incorrect. Veuillez réessayer.
                     </div>
                     <form id="login-form">
                         <div class="form-group">
@@ -700,10 +805,11 @@
                 let selectedRole = "sme";
                 const btnSme = document.getElementById("btn-tab-sme");
                 const btnRecycler = document.getElementById("btn-tab-recycler");
-                const linkRegister = document.getElementById("link-register");
                 const emailInput = document.getElementById("email");
+                const errorAlert = document.getElementById("login-error-alert");
 
                 const updateTabUI = () => {
+                    errorAlert.style.display = "none";
                     if (selectedRole === "sme") {
                         btnSme.style.backgroundColor = "white";
                         btnSme.style.boxShadow = "var(--shadow-sm)";
@@ -713,7 +819,6 @@
                         btnRecycler.style.boxShadow = "none";
                         btnRecycler.style.color = "var(--text-secondary)";
                         btnRecycler.style.fontWeight = "500";
-                        linkRegister.href = "#/register/sme";
                         emailInput.value = "producteur@sipra.ci";
                     } else {
                         btnRecycler.style.backgroundColor = "white";
@@ -724,7 +829,6 @@
                         btnSme.style.boxShadow = "none";
                         btnSme.style.color = "var(--text-secondary)";
                         btnSme.style.fontWeight = "500";
-                        linkRegister.href = "#/register/recycler";
                         emailInput.value = "contact@recyclage.ci";
                     }
                 };
@@ -733,20 +837,25 @@
                 btnRecycler.addEventListener("click", () => { selectedRole = "recycler"; updateTabUI(); });
                 updateTabUI();
 
-                document.getElementById("login-form").addEventListener("submit", (e) => {
+                document.getElementById("login-form").addEventListener("submit", async (e) => {
                     e.preventDefault();
-                    state.currentUser = {
-                        email: emailInput.value,
-                        role: selectedRole,
-                        companyName: selectedRole === "sme" ? "SIPRA Industries" : "Société Ivoirienne de Recyclage"
-                    };
-                    saveState();
-                    window.location.hash = selectedRole === "sme" ? "/sme/dashboard" : "/recycler/dashboard";
+                    errorAlert.style.display = "none";
+                    const email = emailInput.value.trim().toLowerCase();
+                    const password = document.getElementById("password").value;
+
+                    const matchedUser = state.users.find(u => u.email.toLowerCase() === email && u.password === password && u.role === selectedRole);
+                    if (matchedUser) {
+                        state.currentUser = { email: matchedUser.email, role: matchedUser.role, companyName: matchedUser.companyName };
+                        saveState();
+                        window.location.hash = matchedUser.role === "sme" ? "/sme/dashboard" : "/recycler/dashboard";
+                    } else {
+                        errorAlert.style.display = "block";
+                    }
                 });
             }
         };
 
-        // 2. INSCRIPTION PME
+        // 2. INSCRIPTION
         const RegisterSmeScreen = {
             render: () => {
                 const zoneOptions = COTE_DIVOIRE_ZONES.map(z => `<option value="${z}">${z}</option>`).join("");
@@ -759,17 +868,25 @@
                             <div class="logo-text" style="background: white; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; color: white;">EcoCycle CI</div>
                         </div>
                         <h1 class="auth-hero-title">Rejoignez le réseau circulaire de Côte d'Ivoire</h1>
-                        <p class="auth-hero-desc">Enregistrez votre entreprise pour monétiser vos recyclables, suivre vos flux de déchets et générer des rapports RSE exportables.</p>
+                        <p class="auth-hero-desc">Enregistrez votre structure pour valoriser les déchets ou développer vos opérations de recyclage.</p>
                     </div>
                     <div class="auth-form-side" style="padding-top: 40px; padding-bottom: 40px; justify-content: flex-start; overflow-y: auto;">
                         <div style="margin-bottom: 24px;">
                             <a href="#/login" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;">
                                 <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Retour à la connexion
                             </a>
-                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 700; margin-bottom: 6px;">Inscription PME</h2>
-                            <p style="color: var(--text-secondary);">Configurez votre profil d'entreprise productrice</p>
+                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 700; margin-bottom: 6px;">Création de compte</h2>
+                            <p style="color: var(--text-secondary);">Renseignez les informations de votre entreprise</p>
                         </div>
                         <form id="register-sme-form">
+                            <div class="form-group" style="margin-bottom: 24px;">
+                                <label class="form-label">Type d'Activité</label>
+                                <div style="display: flex; gap: 12px; margin-top: 4px;">
+                                    <button type="button" id="role-sme-btn" class="btn btn-primary" style="flex: 1; padding: 10px;">🏢 PME Productrice</button>
+                                    <button type="button" id="role-rec-btn" class="btn btn-secondary" style="flex: 1; padding: 10px;">♻️ Recycleur / Collecteur</button>
+                                </div>
+                                <input type="hidden" id="selected-register-role" value="sme">
+                            </div>
                             <div class="form-group">
                                 <label class="form-label" for="company-name">Nom de l'Entreprise (Raison Sociale)</label>
                                 <input type="text" id="company-name" class="form-control" placeholder="Ex: SIPRA Industries" required>
@@ -781,9 +898,9 @@
                                     ${zoneOptions}
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="group-business-sector">
                                 <label class="form-label" for="business-sector">Secteur d'activité</label>
-                                <select id="business-sector" class="form-control" required>
+                                <select id="business-sector" class="form-control">
                                     <option value="" disabled selected>Sélectionnez votre secteur</option>
                                     ${sectorOptions}
                                 </select>
@@ -801,7 +918,7 @@
                                 <input type="password" id="password" class="form-control" placeholder="••••••••" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
-                                Créer mon compte PME <i data-lucide="user-plus"></i>
+                                Valider mon inscription <i data-lucide="user-plus"></i>
                             </button>
                         </form>
                     </div>
@@ -809,21 +926,52 @@
                 `;
             },
             afterRender: () => {
-                document.getElementById("register-sme-form").addEventListener("submit", (e) => {
+                const btnSme = document.getElementById("role-sme-btn");
+                const btnRec = document.getElementById("role-rec-btn");
+                const roleInput = document.getElementById("selected-register-role");
+                const sectorGroup = document.getElementById("group-business-sector");
+
+                btnSme.addEventListener("click", () => {
+                    roleInput.value = "sme";
+                    btnSme.className = "btn btn-primary";
+                    btnRec.className = "btn btn-secondary";
+                    sectorGroup.style.display = "flex";
+                });
+
+                btnRec.addEventListener("click", () => {
+                    roleInput.value = "recycler";
+                    btnRec.className = "btn btn-primary";
+                    btnSme.className = "btn btn-secondary";
+                    sectorGroup.style.display = "none";
+                });
+
+                document.getElementById("register-sme-form").addEventListener("submit", async (e) => {
                     e.preventDefault();
                     const companyName = document.getElementById("company-name").value;
-                    state.currentUser = {
-                        role: "sme",
-                        companyName: companyName,
-                        email: document.getElementById("email").value
-                    };
+                    const email = document.getElementById("email").value.trim().toLowerCase();
+                    const password = document.getElementById("password").value;
+                    const role = roleInput.value;
+
+                    state.users.push({ email, password, role, companyName });
+
+                    if (role === "recycler") {
+                        state.recyclers.push({
+                            id: "rec-" + (state.recyclers.length + 1),
+                            name: companyName,
+                            score: "5.0★",
+                            zone: document.getElementById("industrial-zone").value,
+                            phone: document.getElementById("phone").value
+                        });
+                    }
+
+                    state.currentUser = { role, companyName, email };
                     saveState();
-                    window.location.hash = "/sme/dashboard";
+                    window.location.hash = role === "sme" ? "/sme/dashboard" : "/recycler/dashboard";
                 });
             }
         };
 
-        // 3. INSCRIPTION / CONFIGURATION RECYCLEUR
+        // 3. TARIFS
         const RegisterRecyclerScreen = {
             render: () => {
                 const zoneCheckboxes = COTE_DIVOIRE_ZONES.map((z, idx) => `
@@ -833,79 +981,62 @@
                     </label>
                 `).join("");
                 return `
-                <div class="auth-container animate-fade-in" style="flex-direction: row-reverse;">
-                    <div class="auth-hero" style="background: linear-gradient(135deg, #1e3a8a 0%, #0D9F6E 100%);">
-                        <div class="logo-container" style="margin-bottom: 24px;">
-                            <div class="logo-icon" style="background: white; color: var(--secondary);">♻️</div>
-                            <div class="logo-text" style="background: white; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; color: white;">EcoCycle CI</div>
-                        </div>
-                        <h1 class="auth-hero-title">Développez votre activité de collecte</h1>
-                        <p class="auth-hero-desc">Accédez directement aux offres de déchets industriels d'Abidjan, proposez vos tarifs et validez les transactions.</p>
-                    </div>
-                    <div class="auth-form-side" style="padding-top: 40px; padding-bottom: 40px; justify-content: flex-start; overflow-y: auto;">
-                        <div style="margin-bottom: 24px;">
-                            <a href="#/login" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;">
-                                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Retour à la connexion
-                            </a>
-                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 700; margin-bottom: 6px;">Profil Recyclage / Collecte</h2>
-                            <p style="color: var(--text-secondary);">Configurez vos zones et vos tarifs d'achat</p>
-                        </div>
-                        <form id="register-recycler-form">
-                            <div class="form-group">
-                                <label class="form-label" for="recycler-company-name">Nom de l'Entreprise (Raison Sociale)</label>
-                                <input type="text" id="recycler-company-name" class="form-control" value="Société Ivoirienne de Recyclage" required>
+                <div class="topbar"><h1>Grille tarifaire et Zones</h1></div>
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <form id="register-recycler-form">
+                        <div class="form-group">
+                            <label class="form-label">Zones industrielles desservies</label>
+                            <div style="background-color: var(--bg-light); border: 1px solid var(--border); padding: 12px; border-radius: 10px; max-height: 140px; overflow-y: auto;">
+                                ${zoneCheckboxes}
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Zones industrielles desservies</label>
-                                <div style="background-color: var(--bg-light); border: 1px solid var(--border); padding: 12px; border-radius: 10px; max-height: 140px; overflow-y: auto;">
-                                    ${zoneCheckboxes}
+                        </div>
+                        <div class="form-group" style="margin-bottom: 28px;">
+                            <label class="form-label">Vos tarifs d'achat / collecte (FCFA par kg/L)</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background-color: var(--bg-light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                <div>
+                                    <label style="font-size: 12px; color: var(--text-secondary);">Plastique (FCFA/kg)</label>
+                                    <input type="number" id="rate-plastic" class="form-control" value="150" style="padding: 6px 10px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: var(--text-secondary);">Carton (FCFA/kg)</label>
+                                    <input type="number" id="rate-cardboard" class="form-control" value="80" style="padding: 6px 10px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: var(--text-secondary);">Métal (FCFA/kg)</label>
+                                    <input type="number" id="rate-metal" class="form-control" value="350" style="padding: 6px 10px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: var(--text-secondary);">Huile usagée (FCFA/L)</label>
+                                    <input type="number" id="rate-oil" class="form-control" value="200" style="padding: 6px 10px;">
                                 </div>
                             </div>
-                            <div class="form-group" style="margin-bottom: 28px;">
-                                <label class="form-label">Grille tarifaire par défaut (FCFA par kg/L)</label>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background-color: var(--bg-light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                                    <div>
-                                        <label style="font-size: 12px; color: var(--text-secondary);">Plastique (FCFA/kg)</label>
-                                        <input type="number" id="rate-plastic" class="form-control" value="150" style="padding: 6px 10px;">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 12px; color: var(--text-secondary);">Carton (FCFA/kg)</label>
-                                        <input type="number" id="rate-cardboard" class="form-control" value="80" style="padding: 6px 10px;">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 12px; color: var(--text-secondary);">Métal (FCFA/kg)</label>
-                                        <input type="number" id="rate-metal" class="form-control" value="350" style="padding: 6px 10px;">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 12px; color: var(--text-secondary);">Huile usagée (FCFA/L)</label>
-                                        <input type="number" id="rate-oil" class="form-control" value="200" style="padding: 6px 10px;">
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-full" style="padding: 14px; font-size: 16px;">
-                                Enregistrer la configuration <i data-lucide="check-circle"></i>
-                            </button>
-                        </form>
-                    </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            Mettre à jour la grille tarifaire <i data-lucide="check-circle"></i>
+                        </button>
+                    </form>
                 </div>
                 `;
             },
             afterRender: () => {
                 document.getElementById("register-recycler-form").addEventListener("submit", (e) => {
                     e.preventDefault();
-                    const companyName = document.getElementById("recycler-company-name").value;
-                    state.currentUser = {
-                        role: "recycler",
-                        companyName: companyName,
-                        email: "operator@company.ci"
+                    state.recyclerConfig.prices = {
+                        plastic: parseInt(document.getElementById("rate-plastic").value),
+                        cardboard: parseInt(document.getElementById("rate-cardboard").value),
+                        metal: parseInt(document.getElementById("rate-metal").value),
+                        oil: parseInt(document.getElementById("rate-oil").value),
+                        mixed: 50,
+                        hazardous: 250
                     };
                     saveState();
+                    alert("Tarifs mis à jour !");
                     window.location.hash = "/recycler/dashboard";
                 });
             }
         };
 
-        // 4. DÉCLARATION DE DÉCHETS
+        // 4. DÉCLARATION
         const WasteDeclarationScreen = {
             render: () => {
                 const wasteCards = Object.values(WASTE_TYPES).map(w => `
@@ -990,7 +1121,7 @@
             }
         };
 
-        // 5. RÉSULTAT DE LA QUALIFICATION
+        // 5. QUALIFICATION RÉSULTAT ET CHOIX DU PRESTATAIRE
         const WasteResultScreen = {
             render: () => {
                 const item = state.tempDeclaration;
@@ -1001,34 +1132,47 @@
                 const isRecyclable = wInfo.recyclable;
                 const formattedValue = Math.abs(item.value).toLocaleString() + " FCFA";
 
+                const recyclerCards = state.recyclers.map((r, idx) => `
+                    <div class="operator-card ${idx === 0 ? 'selected' : ''}" data-name="${r.name}">
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-primary);">${r.name}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">📍 ${r.zone} • Note: <strong style="color:var(--warning);">${r.score}</strong></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 12px; color: var(--text-secondary);">${isRecyclable ? 'Achat estimé' : 'Coût estimé'}</span>
+                            <div style="font-weight: 700; color: ${isRecyclable ? 'var(--primary-dark)' : 'var(--warning)'}; font-size: 16px;">${formattedValue}</div>
+                        </div>
+                    </div>
+                `).join("");
+
                 return `
                 <div class="topbar animate-fade-in">
                     <h1 class="page-title">Résultat de la qualification</h1>
                 </div>
-                <div class="animate-fade-in" style="max-width: 650px; margin: 0 auto;">
-                    ${isRecyclable ? `
-                        <div class="card" style="border-top: 8px solid var(--primary); padding: 32px; background: linear-gradient(to bottom, #f0fdf4, #ffffff);">
-                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #14532d;">Scenario A: Recyclable</h2>
-                            <div style="background-color: white; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                    <span>Gain estimé pour la PME :</span>
-                                    <span style="font-size: 24px; font-weight: 800; color: var(--primary-dark);">${formattedValue}</span>
-                                </div>
-                            </div>
-                            <button id="btn-route-action" class="btn btn-primary btn-full">Trouver un recycleur partenaire <i data-lucide="search"></i></button>
+                <div class="animate-fade-in" style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; max-width: 1000px; margin: 0 auto;">
+                    <div class="card" style="border-top: 8px solid ${isRecyclable ? 'var(--primary)' : 'var(--warning)'}; padding: 32px; background: white;">
+                        <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: ${isRecyclable ? '#14532d' : '#78350f'};">
+                            ${isRecyclable ? 'Scenario A: Déchet valorisable' : 'Scenario B: Élimination requise'}
+                        </h2>
+                        <div style="margin: 24px 0; padding: 16px; background-color: var(--bg-light); border-radius: 12px; border: 1px solid var(--border);">
+                            <p style="font-size: 14px; margin-bottom: 8px;">Quantité : <strong>${item.weight} kg</strong></p>
+                            <p style="font-size: 14px; margin-bottom: 8px;">Type de déchet : <strong>${wInfo.emoji} ${wInfo.name}</strong></p>
+                            <p style="font-size: 14px;">Empreinte évitée : <strong style="color:var(--primary);">${(item.co2Avoided/1000).toFixed(2)} Tonnes CO2</strong></p>
                         </div>
-                    ` : `
-                        <div class="card" style="border-top: 8px solid var(--warning); padding: 32px; background: linear-gradient(to bottom, #fffbeb, #ffffff);">
-                            <h2 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #78350f;">Scenario B: Élimination Requise</h2>
-                            <div style="background-color: white; border: 1px solid #fef3c7; border-radius: 12px; padding: 20px; margin: 20px 0;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                    <span>Frais de traitement (PME Paye) :</span>
-                                    <span style="font-size: 24px; font-weight: 800; color: var(--warning);">${formattedValue}</span>
-                                </div>
-                            </div>
-                            <button id="btn-route-action" class="btn btn-primary btn-full" style="background: linear-gradient(135deg, var(--warning), #d97706);">Trouver un collecteur agréé <i data-lucide="truck"></i></button>
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                            ${isRecyclable ? '♻️ Les recycleurs partenaires locaux vont racheter ce lot conformément aux tarifs du marché ivoirien.' : '⚠️ En conformité avec la réglementation, vous devez confier ce lot à un collecteur agréé par le MINEDD.'}
+                        </p>
+                    </div>
+                    <div class="card" style="padding: 32px;">
+                        <h3 style="font-family: var(--font-heading); font-size: 18px; font-weight: 700; margin-bottom: 16px;">Sélectionnez votre prestataire</h3>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Choisissez un opérateur de traitement pour valider votre demande.</p>
+                        <div id="operators-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 24px;">
+                            ${recyclerCards}
                         </div>
-                    `}
+                        <button id="btn-validate-deal" class="btn btn-primary btn-full" style="padding: 14px;">
+                            Confirmer & Envoyer au prestataire <i data-lucide="check"></i>
+                        </button>
+                    </div>
                 </div>
                 `;
             },
@@ -1036,10 +1180,19 @@
                 const item = state.tempDeclaration;
                 if (!item) return;
                 const wInfo = WASTE_TYPES[item.wasteType];
-                
-                document.getElementById("btn-route-action").addEventListener("click", () => {
+                let selectedOperator = state.recyclers[0].name;
+
+                document.querySelectorAll(".operator-card").forEach(card => {
+                    card.addEventListener("click", () => {
+                        document.querySelectorAll(".operator-card").forEach(c => c.classList.remove("selected"));
+                        card.classList.add("selected");
+                        selectedOperator = card.dataset.name;
+                    });
+                });
+
+                document.getElementById("btn-validate-deal").addEventListener("click", async () => {
                     const now = new Date();
-                    state.declarations.push({
+                    const newDec = {
                         id: "dec-" + (100 + state.declarations.length + 1),
                         date: now.toISOString().split('T')[0],
                         company: state.currentUser ? state.currentUser.companyName : "SIPRA Industries",
@@ -1050,17 +1203,19 @@
                         status: "En attente de collecteur",
                         value: item.value,
                         co2Avoided: item.co2Avoided,
-                        collector: null
-                    });
+                        collector: selectedOperator
+                    };
+
+                    state.declarations.push(newDec);
                     state.tempDeclaration = null;
                     saveState();
-                    alert("Demande de collecte enregistrée et publiée sur le réseau de Côte d'Ivoire !");
+                    alert(`La demande de collecte a été transmise à : ${selectedOperator} ! Elle est visible dans son onglet Alertes.`);
                     window.location.hash = "/sme/collections";
                 });
             }
         };
 
-        // 6. TABLEAU DE BORD PME
+        // 6. DASHBOARD PME
         const SmeDashboardScreen = {
             render: () => {
                 let totalWaste = 0, revenue = 0, costs = 0, completed = 0, co2 = 0;
@@ -1086,7 +1241,7 @@
                 <div class="kpi-grid">
                     <div class="card kpi-card"><div>Total Déclaré</div><div class="kpi-value">${(totalWaste/1000).toFixed(1)} Tonnes</div></div>
                     <div class="card kpi-card"><div>Revenus générés</div><div class="kpi-value" style="color: var(--primary);">${revenue.toLocaleString()} F</div></div>
-                    <div class="card kpi-card"><div>Coûts d'élimination</div><div class="kpi-value" style="color: var(--danger);">${costs.toLocaleString()} F</div></div>
+                    <div class="card kpi-card"><div>Coûts d'elimination</div><div class="kpi-value" style="color: var(--danger);">${costs.toLocaleString()} F</div></div>
                     <div class="card kpi-card"><div>Collectes terminées</div><div class="kpi-value">${completed}</div></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
@@ -1113,58 +1268,77 @@
             }
         };
 
-        // 7. ALERTES D'OPPORTUNITÉS (RECYCLEUR)
+        // 7. ALERTES RECYCLEUR (DYNAMIQUE)
         const MatchingAlertsScreen = {
             render: () => {
-                const cards = state.matchingAlerts.map(a => `
+                const currentRecycler = state.currentUser ? state.currentUser.companyName : "";
+                
+                // Filtrer les déclarations qui ont été assignées à CE recycleur spécifique ET en attente
+                const myAlerts = state.declarations.filter(d => d.collector === currentRecycler && d.status === "En attente de collecteur");
+
+                const cards = myAlerts.map(a => {
+                    const wInfo = WASTE_TYPES[a.wasteType];
+                    return `
                     <div class="card" style="margin-bottom: 16px; border-left: 6px solid var(--primary);">
-                        <h3>${a.smeName}</h3>
-                        <p>📍 Zone: ${a.zone} (${a.distance} km)</p>
-                        <p>Déchet: ${WASTE_TYPES[a.wasteType].name} (${a.weight} kg) - Valeur: ${a.value.toLocaleString()} FCFA</p>
+                        <h3>PME Productrice : ${a.company}</h3>
+                        <p>📍 Zone: ${a.zone}</p>
+                        <p>Déchet déclaré: ${wInfo.emoji} ${wInfo.name} (${a.weight} kg) - Transaction : <strong>${Math.abs(a.value).toLocaleString()} FCFA</strong></p>
                         <div style="margin-top: 12px; display: flex; gap: 10px;">
                             <button class="btn btn-secondary btn-decline" data-id="${a.id}">Décliner</button>
                             <button class="btn btn-primary btn-accept" data-id="${a.id}">Accepter la collecte</button>
                         </div>
                     </div>
-                `).join("");
+                    `;
+                }).join("");
+
                 return `
                 <div class="topbar"><h1>Opportunités de collecte</h1></div>
-                <div>${cards || '<p>Aucune opportunité dans vos zones en ce moment.</p>'}</div>
+                <div>
+                    ${cards || `
+                        <div class="card" style="text-align:center; padding: 40px; color:var(--text-secondary);">
+                            <p>📭 Aucune alerte de collecte en attente pour <strong>${currentRecycler}</strong>.</p>
+                            <p style="font-size:12px; margin-top:8px;">Connectez-vous en PME pour déclarer des déchets et sélectionnez votre entreprise pour générer une alerte.</p>
+                        </div>
+                    `}
+                </div>
                 `;
             },
             afterRender: () => {
                 document.querySelectorAll(".btn-accept").forEach(b => {
                     b.addEventListener("click", (e) => {
                         const id = e.target.dataset.id;
-                        const match = state.matchingAlerts.find(a => a.id === id);
-                        if (!match) return;
+                        const dec = state.declarations.find(d => d.id === id);
+                        if (!dec) return;
 
-                        state.declarations.push({
-                            id: "dec-" + (100 + state.declarations.length + 1),
-                            date: new Date().toISOString().split('T')[0],
-                            company: match.smeName,
-                            zone: match.zone,
-                            wasteType: match.wasteType,
-                            weight: match.weight,
-                            recyclable: true,
-                            status: "Matched",
-                            value: match.value,
-                            co2Avoided: 1500,
-                            collector: "Société Ivoirienne de Recyclage"
-                        });
-                        state.matchingAlerts = state.matchingAlerts.filter(a => a.id !== id);
+                        dec.status = "Matched"; // Change le statut pour le QR Scanner
                         saveState();
-                        alert("Collecte acceptée ! Elle apparaît désormais dans votre agenda.");
+                        alert("Collecte acceptée ! Vous pouvez maintenant la valider dans l'onglet Scanner QR.");
                         window.location.hash = "/recycler/collections";
+                    });
+                });
+
+                document.querySelectorAll(".btn-decline").forEach(b => {
+                    b.addEventListener("click", (e) => {
+                        const id = e.target.dataset.id;
+                        const decIndex = state.declarations.findIndex(d => d.id === id);
+                        if (decIndex !== -1) {
+                            state.declarations.splice(decIndex, 1);
+                            saveState();
+                            window.location.reload();
+                        }
                     });
                 });
             }
         };
 
-        // 8. SCANNER QR DE VALIDATION (RECYCLEUR)
+        // 8. SCANNER QR
         const CollectionValidationScreen = {
             render: () => {
-                const match = state.declarations.find(d => d.status === "Matched");
+                const currentRecycler = state.currentUser ? state.currentUser.companyName : "";
+                
+                // Trouver les collectes affectées à ce recycleur avec le statut "Matched"
+                const match = state.declarations.find(d => d.status === "Matched" && d.collector === currentRecycler);
+
                 return `
                 <div class="topbar"><h1>Scanner de validation QR</h1></div>
                 <div style="max-width:400px; margin:0 auto; text-align:center;">
@@ -1176,7 +1350,7 @@
                         <p style="margin: 20px 0;">Entreprise PME: <b>${match.company}</b> (${match.weight} kg)</p>
                         <button id="btn-validate" class="btn btn-primary btn-full">Valider la collecte par QR Code</button>
                     ` : `
-                        <p>Aucune collecte en cours de validation. Acceptez d'abord une alerte de collecte.</p>
+                        <p style="color:var(--text-secondary);">Aucune collecte active à valider en attente de scan.</p>
                     `}
                 </div>
                 <style>@keyframes scanEffect { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }</style>
@@ -1186,7 +1360,8 @@
                 const btn = document.getElementById("btn-validate");
                 if (btn) {
                     btn.addEventListener("click", () => {
-                        const match = state.declarations.find(d => d.status === "Matched");
+                        const currentRecycler = state.currentUser ? state.currentUser.companyName : "";
+                        const match = state.declarations.find(d => d.status === "Matched" && d.collector === currentRecycler);
                         if (match) {
                             match.status = "Terminé";
                             saveState();
@@ -1198,7 +1373,7 @@
             }
         };
 
-        // 9. ANALYTICS (RECYCLEUR)
+        // 9. ANALYTICS
         const AnalyticsDashboardScreen = {
             render: () => `
             <div class="topbar"><h1>Statistiques & Analyses</h1></div>
@@ -1213,7 +1388,7 @@
             }
         };
 
-        // 10. RAPPORT ESG (PME)
+        // 10. ESG
         const EsgReportScreen = {
             render: () => {
                 let recycled = 0, co2 = 0;
@@ -1242,7 +1417,6 @@
             afterRender: () => {}
         };
 
-        // LISTE DES COLLECTES
         const CollectionsScreen = {
             render: () => {
                 const rows = state.declarations.map(d => `
@@ -1262,7 +1436,6 @@
             afterRender: () => {}
         };
 
-        // MON PROFIL
         const ProfileScreen = {
             render: () => `
             <div class="topbar"><h1>Mon Profil</h1></div>
@@ -1284,7 +1457,7 @@
             }
         };
 
-        // --- SYSTEM DE ROUTAGE ---
+        // --- SYNCHRONISATION ROUTAGE ---
         const routes = {
             "/login": LoginScreen,
             "/register/sme": RegisterSmeScreen,
@@ -1322,7 +1495,7 @@
 
             return `
                 <div class="sidebar">
-                    <div class="logo-container"><div class="logo-icon">♻️</div><div class="logo-text">EcoCycle CI</div></div>
+                    <div class="logo-container"><div class="logo-icon">♻️</div><div class="logo-text">EcoCycle</div></div>
                     <ul class="nav-menu">${menu}</ul>
                     <div class="sidebar-footer">
                         <div class="avatar">${state.currentUser.companyName.charAt(0)}</div>
@@ -1343,7 +1516,7 @@
             if (deskNav) deskNav.classList.add("active");
         }
 
-        function router() {
+        async function router() {
             loadState();
             const appEl = document.getElementById("app");
             const rawHash = window.location.hash;
@@ -1368,6 +1541,7 @@
             }
         }
 
+        checkSupabaseConfig();
         window.addEventListener("hashchange", router);
         window.addEventListener("load", router);
     </script>
